@@ -1,0 +1,15 @@
+export type Role = 'CLIENT'|'COOK'|'ADMIN';
+export type User = {id:string;full_name:string;phone:string;email:string;role:Role};
+export type Product = {id:string;name:string;description:string;price:number;category:string;available_stock:number;is_available:boolean;image_url?:string;updated_at?:string};
+export type Line = {menu_item_id:string;menu_item_name?:string;unit_price?:number;quantity:number;notes:string};
+export type Payment = {method:string;amount:number;reference?:string;created_at:string};
+export type Order = {id:string;order_number:number;customer_id:string;customer_name:string;customer_phone:string;total_amount:number;status:string;estimated_minutes:number;created_at:string;updated_at:string;order_items:Line[];payments:Payment|null};
+export type Announcement = {id:string;title:string;message:string;created_at:string};
+export type Closure = {business_date:string;total_amount:number;payment_count:number};
+export type Snapshot = {archived_menu?:Product[];menu:Product[];orders:Order[];announcements:Announcement[];accepting_orders:boolean;closures:Closure[]};
+export type Report = {date:string;revenue:number;paid_orders:number;paid_units:number;completed_orders:number;cancelled_orders:number;unpaid_orders:number;unpaid_amount:number;by_method:Record<string,number>;products:{id:string;name:string;units:number;amount:number}[];payments:Order[]};
+export const money=(n:number)=>new Intl.NumberFormat('es-PE',{style:'currency',currency:'PEN'}).format(n);
+export const today=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'America/Lima',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+export const statusLabel:Record<string,string>={PENDING:'En cola',PREPARING:'Preparando',READY:'Listo para recoger',DELIVERED:'Entregado',CANCELLED:'Cancelado'};
+export const categories:Record<string,string>={BEVERAGE:'Bebidas',BREAD:'Panes',COMBO:'Combos',EXTRA:'Extras'};
+export const methodLabel:Record<string,string>={CASH:'Efectivo',YAPE:'Yape',PLIN:'Plin'};

@@ -1,0 +1,33 @@
+PRAGMA foreign_keys=ON;
+CREATE TABLE IF NOT EXISTS schema_migrations(version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS users(id TEXT PRIMARY KEY,email TEXT NOT NULL UNIQUE COLLATE NOCASE,full_name TEXT NOT NULL CHECK(length(trim(full_name))>0),phone TEXT NOT NULL,role TEXT NOT NULL CHECK(role IN ('CLIENT','COOK','ADMIN')),password_hash TEXT NOT NULL,created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS sessions(token_hash TEXT PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,expires_at INTEGER NOT NULL);
+CREATE INDEX IF NOT EXISTS sessions_expiry ON sessions(expires_at);
+CREATE TABLE IF NOT EXISTS menu_items(id TEXT PRIMARY KEY,name TEXT NOT NULL,description TEXT NOT NULL,price_cents INTEGER NOT NULL CHECK(price_cents>=0),category TEXT NOT NULL CHECK(category IN ('BEVERAGE','BREAD','EXTRA','COMBO')),available_stock INTEGER NOT NULL CHECK(available_stock>=0),is_available INTEGER NOT NULL CHECK(is_available IN (0,1)),image_url TEXT NOT NULL,updated_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS orders(id TEXT PRIMARY KEY,order_number INTEGER NOT NULL UNIQUE,customer_id TEXT NOT NULL REFERENCES users(id),customer_name TEXT NOT NULL,customer_phone TEXT NOT NULL,total_cents INTEGER NOT NULL CHECK(total_cents>=0),status TEXT NOT NULL CHECK(status IN ('PENDING','PREPARING','READY','DELIVERED','CANCELLED')),estimated_minutes INTEGER NOT NULL,created_at TEXT NOT NULL,updated_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS orders_customer_date ON orders(customer_id,created_at DESC);
+CREATE INDEX IF NOT EXISTS orders_status_date ON orders(status,created_at);
+CREATE TABLE IF NOT EXISTS order_items(id INTEGER PRIMARY KEY AUTOINCREMENT,order_id TEXT NOT NULL REFERENCES orders(id),menu_item_id TEXT NOT NULL REFERENCES menu_items(id),menu_item_name TEXT NOT NULL,unit_price_cents INTEGER NOT NULL CHECK(unit_price_cents>=0),quantity INTEGER NOT NULL CHECK(quantity>0),notes TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS items_order ON order_items(order_id);
+CREATE TABLE IF NOT EXISTS payments(order_id TEXT PRIMARY KEY REFERENCES orders(id),method TEXT NOT NULL CHECK(method IN ('CASH','YAPE','PLIN')),amount_cents INTEGER NOT NULL CHECK(amount_cents>=0),reference TEXT NOT NULL,actor_id TEXT NOT NULL REFERENCES users(id),created_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS payments_date ON payments(created_at);
+CREATE TABLE IF NOT EXISTS announcements(id TEXT PRIMARY KEY,title TEXT NOT NULL,message TEXT NOT NULL,author_id TEXT NOT NULL REFERENCES users(id),created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS cash_closures(business_date TEXT PRIMARY KEY,total_cents INTEGER NOT NULL CHECK(total_cents>=0),payment_count INTEGER NOT NULL CHECK(payment_count>=0),actor_id TEXT NOT NULL REFERENCES users(id),created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS business_settings(id INTEGER PRIMARY KEY CHECK(id=1),accepting_orders INTEGER NOT NULL CHECK(accepting_orders IN (0,1)),next_order_number INTEGER NOT NULL CHECK(next_order_number>0));
+INSERT OR IGNORE INTO business_settings VALUES(1,1,101);
+CREATE TABLE IF NOT EXISTS request_receipts(customer_id TEXT NOT NULL REFERENCES users(id),request_id TEXT NOT NULL,payload TEXT NOT NULL,order_id TEXT NOT NULL REFERENCES orders(id),PRIMARY KEY(customer_id,request_id));
+CREATE TABLE IF NOT EXISTS order_status_history(id INTEGER PRIMARY KEY AUTOINCREMENT,order_id TEXT NOT NULL REFERENCES orders(id),previous_status TEXT NOT NULL,new_status TEXT NOT NULL,actor_id TEXT NOT NULL REFERENCES users(id),reason TEXT NOT NULL DEFAULT '',created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS stock_movements(id INTEGER PRIMARY KEY AUTOINCREMENT,menu_item_id TEXT NOT NULL REFERENCES menu_items(id),quantity_delta INTEGER NOT NULL CHECK(quantity_delta<>0),reason TEXT NOT NULL,order_id TEXT REFERENCES orders(id),actor_id TEXT NOT NULL REFERENCES users(id),created_at TEXT NOT NULL);
+CREATE TRIGGER IF NOT EXISTS payment_checks BEFORE INSERT ON payments BEGIN
+ SELECT CASE WHEN NEW.amount_cents != (SELECT total_cents FROM orders WHERE id=NEW.order_id) THEN RAISE(ABORT,'El importe debe coincidir con el pedido') END;
+ SELECT CASE WHEN (SELECT status FROM orders WHERE id=NEW.order_id)='CANCELLED' THEN RAISE(ABORT,'Pedido cancelado') END;
+ SELECT CASE WHEN NEW.method!='CASH' AND length(trim(NEW.reference))=0 THEN RAISE(ABORT,'Referencia requerida') END;
+ SELECT CASE WHEN EXISTS(SELECT 1 FROM cash_closures WHERE business_date=date(NEW.created_at,'-5 hours')) THEN RAISE(ABORT,'Caja cerrada') END;
+END;
+CREATE TRIGGER IF NOT EXISTS delivery_checks BEFORE UPDATE OF status ON orders WHEN NEW.status='DELIVERED' BEGIN
+ SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM payments WHERE order_id=NEW.id) THEN RAISE(ABORT,'Pago requerido antes de entregar') END;
+END;
+INSERT OR IGNORE INTO schema_migrations VALUES(1,strftime('%Y-%m-%dT%H:%M:%fZ','now'));
+CREATE TABLE IF NOT EXISTS menu_item_archives(menu_item_id TEXT PRIMARY KEY REFERENCES menu_items(id),actor_id TEXT NOT NULL REFERENCES users(id),created_at TEXT NOT NULL,was_available INTEGER NOT NULL CHECK(was_available IN (0,1)));
+CREATE TABLE IF NOT EXISTS menu_item_history(id INTEGER PRIMARY KEY AUTOINCREMENT,menu_item_id TEXT NOT NULL REFERENCES menu_items(id),action TEXT NOT NULL CHECK(action IN ('ARCHIVE','RESTORE')),actor_id TEXT NOT NULL REFERENCES users(id),created_at TEXT NOT NULL);
+INSERT OR IGNORE INTO schema_migrations VALUES(2,strftime('%Y-%m-%dT%H:%M:%fZ','now'));

@@ -1,0 +1,9 @@
+'use client';
+import {createContext,useContext,useEffect,useRef,useState,type ReactNode,type FormEvent,type FormHTMLAttributes} from 'react';
+import {X,ShoppingBag} from 'lucide-react';
+import type {Product} from '@/lib/types';
+export const FeedbackContext=createContext<{text:string;error:boolean}|null>(null);
+export function Form({onSubmit,children,...props}:Omit<FormHTMLAttributes<HTMLFormElement>,'onSubmit'>&{onSubmit:(e:FormEvent<HTMLFormElement>)=>void}){return <form {...props} onSubmit={e=>{e.preventDefault();onSubmit(e)}} onClick={e=>{const button=(e.target as Element).closest('button');if(button?.type==='submit'&&button.form===e.currentTarget){e.preventDefault();if(e.currentTarget.reportValidity())onSubmit(e as unknown as FormEvent<HTMLFormElement>)}}}>{children}</form>}
+export function Modal({title,subtitle,children,onClose}:{title:string;subtitle?:string;children:ReactNode;onClose:()=>void}){const feedback=useContext(FeedbackContext);const ref=useRef<HTMLDialogElement>(null);useEffect(()=>{const d=ref.current;d?.showModal();return()=>d?.close()},[]);return <dialog ref={ref} className="modal" onCancel={e=>{e.preventDefault();onClose()}} onClick={e=>{if(e.target===e.currentTarget)onClose()}}><div className="modal-inner"><header className="modal-header"><div><h2>{title}</h2>{subtitle&&<p>{subtitle}</p>}</div><button className="icon-button" aria-label="Cerrar ventana" onClick={onClose}><X/></button></header>{feedback?.error&&<div className="inline-error" role="alert">{feedback.text}</div>}{children}</div></dialog>}
+export function Picture({product}:{product:Product}){const [failed,setFailed]=useState(false);return <img src={!failed&&product.image_url?product.image_url:'/food-combo.svg'} alt={product.name} loading="lazy" onError={()=>setFailed(true)}/>}
+export function Empty({title,description}:{title:string;description:string}){return <div className="empty"><ShoppingBag size={32}/><h3>{title}</h3><p>{description}</p></div>}

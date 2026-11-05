@@ -1,0 +1,422 @@
+[
+  {
+    "id": "HU-01",
+    "title": "Registro de cliente",
+    "role": "Cliente",
+    "priority": "Alta",
+    "status": "Base en código",
+    "depends": "Sin dependencia funcional previa",
+    "story": "Como cliente, quiero crear una cuenta con mi nombre, teléfono, correo y contraseña para realizar pedidos identificados.",
+    "criteria": [
+      "Dado un registro incompleto o inválido, cuando intento crear mi cuenta, se indican los datos por corregir y se valida la confirmación de contraseña.",
+      "Dados datos válidos y la confirmación de correo desactivada, cuando Supabase devuelve una sesión, ingreso con mi perfil CLIENT sin verificación manual.",
+      "Dada una pantalla pequeña o letra ampliada, cuando completo el registro, puedo desplazar el formulario y acceder a sus campos y botón con el teclado abierto."
+    ]
+  },
+  {
+    "id": "HU-02",
+    "title": "Inicio de sesión seguro",
+    "role": "Cliente",
+    "priority": "Alta",
+    "status": "Base en código",
+    "depends": "HU-01",
+    "story": "Como cliente, quiero iniciar sesión con mi correo y contraseña para acceder a mis pedidos y datos personales.",
+    "criteria": [
+      "Dadas credenciales válidas, cuando ingreso, se carga mi perfil y se muestra la interfaz correspondiente a mi rol del servidor.",
+      "Dadas credenciales incorrectas, cuando intento ingresar, se rechaza el acceso y se informa el error.",
+      "Dado un fallo de red o de Supabase, cuando intento ingresar, el sistema muestra un error y no fabrica una sesión exitosa."
+    ]
+  },
+  {
+    "id": "HU-03",
+    "title": "Sesión persistente y cierre de acceso",
+    "role": "Cliente",
+    "priority": "Alta",
+    "status": "Base en código",
+    "depends": "HU-02",
+    "story": "Como cliente, quiero mantener mi sesión entre aperturas y poder cerrarla para usar la app cómodamente y proteger mis datos.",
+    "criteria": [
+      "Dada una sesión guardada y válida, cuando vuelvo a abrir la app, recupero mi cuenta sin volver a escribir la contraseña.",
+      "Dado un token vencido, cuando se requiere una consulta, se intenta renovarlo; si la renovación es inválida, se solicita iniciar sesión.",
+      "Dada mi sesión activa, cuando cierro sesión, se eliminan las credenciales locales y dejan de mostrarse mis pedidos y mi carrito."
+    ]
+  },
+  {
+    "id": "HU-04",
+    "title": "Actualización de datos de contacto",
+    "role": "Cliente",
+    "priority": "Alta",
+    "status": "Base en código",
+    "depends": "HU-02",
+    "story": "Como cliente, quiero actualizar mi nombre y teléfono para que el personal pueda identificarme y contactarme correctamente.",
+    "criteria": [
+      "Dada mi sesión activa, cuando abro Mi perfil, visualizo nombre y teléfono en un formulario desplazable que admite letra ampliada.",
+      "Dados nombre y teléfono no vacíos, cuando guardo, se persisten en mi perfil y se usan en pedidos posteriores; un fallo no anuncia éxito.",
+      "Dado un cliente autenticado, cuando intenta modificar su rol o el perfil de otra persona por la API, el servidor rechaza la operación."
+    ]
+  },
+  {
+    "id": "HU-05",
+    "title": "Consulta de la carta disponible",
+    "role": "Cliente",
+    "priority": "Alta",
+    "status": "Base en código",
+    "depends": "HU-02; HU-19",
+    "story": "Como cliente, quiero consultar los desayunos, sus precios e imágenes para decidir qué productos comprar.",
+    "criteria": [
+      "Dada la carta de Supabase, cuando la consulto, veo nombre, descripción, imagen disponible, precio, categoría y stock en tarjetas que permiten varias líneas.",
+      "Dado un producto desactivado por administración, cuando se actualiza la carta, deja de ofrecerse al cliente.",
+      "Dado un producto sin stock, cuando intento agregarlo, el botón no permite incorporarlo al carrito."
+    ]
+  },
+  {
+    "id": "HU-06",
+    "title": "Filtros y búsqueda de productos",
+    "role": "Cliente",
+    "priority": "Media",
+    "status": "Base en código",
+    "depends": "HU-05",
+    "story": "Como cliente, quiero filtrar por categoría y buscar por nombre para encontrar rápidamente el desayuno que deseo.",
+    "criteria": [
+      "Dada la carta disponible, cuando selecciono Bebidas, Panes, Extras o Combos, veo únicamente los productos de esa categoría.",
+      "Dado un texto de búsqueda, cuando lo ingreso, se muestran coincidencias por nombre sin distinguir mayúsculas de minúsculas.",
+      "Dada una búsqueda sin coincidencias, cuando se muestran los resultados, aparece un mensaje de lista vacía y puedo limpiar los filtros."
+    ]
+  },
+  {
+    "id": "HU-07",
+    "title": "Gestión del carrito",
+    "role": "Cliente",
+    "priority": "Alta",
+    "status": "Base en código",
+    "depends": "HU-05",
+    "story": "Como cliente, quiero agregar productos, modificar cantidades y retirar artículos para preparar mi compra antes de enviarla.",
+    "criteria": [
+      "Dado un producto disponible, cuando lo agrego, el carrito actualiza cantidad, subtotal y total estimado sin superar el stock mostrado.",
+      "Dada una unidad en el carrito, cuando la reduzco, se retira el artículo; puedo vaciar el carrito si no existe un envío pendiente.",
+      "Dados nombres largos y letra ampliada, cuando reviso el carrito, cantidades, indicaciones, totales y confirmación son accesibles mediante desplazamiento."
+    ]
+  },
+  {
+    "id": "HU-08",
+    "title": "Indicaciones por producto",
+    "role": "Cliente",
+    "priority": "Media",
+    "status": "Base en código",
+    "depends": "HU-07",
+    "story": "Como cliente, quiero escribir indicaciones breves por producto para comunicar preferencias de preparación a cocina.",
+    "criteria": [
+      "Dado un artículo del carrito, cuando escribo indicaciones, se asocian solo a ese detalle y se muestra el contador de caracteres.",
+      "Dada una nota de 500 caracteres, cuando intento escribir más, el campo conserva como máximo ese límite; el servidor también valida la longitud.",
+      "Dado un pedido confirmado con notas, cuando cliente o cocina revisa su detalle, ve las indicaciones junto al producto y con varias líneas si hace falta."
+    ]
+  },
+  {
+    "id": "HU-09",
+    "title": "Confirmación de pedido y reserva de stock",
+    "role": "Cliente",
+    "priority": "Alta",
+    "status": "Base en código",
+    "depends": "HU-04; HU-07; HU-22",
+    "story": "Como cliente, quiero confirmar mi pedido con precios y stock validados para recibir un número de atención confiable.",
+    "criteria": [
+      "Dado un carrito válido y la recepción abierta, cuando confirmo, el servidor calcula el importe con los precios vigentes y genera el número de pedido.",
+      "Dado stock insuficiente, cuando se valida el pedido, se rechaza la compra sin guardar una cabecera incompleta ni descontar parcialmente el inventario.",
+      "Dada una respuesta confirmada, cuando termina el envío, se muestra el número y total definitivo y se vacía el carrito; antes de ello no se anuncia éxito."
+    ]
+  },
+  {
+    "id": "HU-10",
+    "title": "Reintento sin duplicar el pedido",
+    "role": "Cliente",
+    "priority": "Alta",
+    "status": "Base en código",
+    "depends": "HU-09",
+    "story": "Como cliente, quiero reintentar un envío interrumpido para conocer el resultado de mi compra sin generar pedidos duplicados.",
+    "criteria": [
+      "Dada una pérdida de conexión durante el envío, cuando falta confirmación, se conserva el identificador de solicitud y el carrito enviado.",
+      "Dado un envío pendiente, cuando reintento o reabro la app con la misma cuenta, se reutiliza la solicitud guardada y se impide modificar ese carrito.",
+      "Dado un pedido ya creado para esa solicitud, cuando el servidor recibe el reintento, devuelve el mismo pedido sin duplicar detalles ni descuentos de stock."
+    ]
+  },
+  {
+    "id": "HU-11",
+    "title": "Mis pedidos legibles e historial",
+    "role": "Cliente",
+    "priority": "Alta",
+    "status": "Base en código",
+    "depends": "HU-09; HU-15",
+    "story": "Como cliente, quiero consultar mis pedidos y su estado para saber cuándo acercarme a recoger mi desayuno.",
+    "criteria": [
+      "Dada mi sesión, cuando abro Pedidos, solo veo pedidos vinculados a mi UUID; En atención agrupa PENDING, PREPARING y READY.",
+      "Dado un pedido entregado o cancelado, cuando actualizo la vista, aparece en Historial; DELIVERED se muestra como Completado · entregado.",
+      "Dados 320 dp de ancho y letra ampliada hasta 1.6, cuando reviso nombres largos, estados e importes, el texto se distribuye sin solaparse y puedo desplazarme hasta el total."
+    ]
+  },
+  {
+    "id": "HU-12",
+    "title": "Cancelación antes de preparar",
+    "role": "Cliente",
+    "priority": "Alta",
+    "status": "Base en código",
+    "depends": "HU-09; HU-22",
+    "story": "Como cliente, quiero cancelar un pedido que todavía está en cola para evitar una preparación que ya no necesito.",
+    "criteria": [
+      "Dado un pedido propio en cola y sin pago, cuando confirmo su cancelación, el servidor lo cambia a CANCELLED y registra un motivo.",
+      "Dado un pedido en preparación, entregado o pagado, cuando intento cancelarlo por este flujo, el servidor rechaza la operación.",
+      "Dada una reserva creada por el sistema, cuando se cancela el pedido, las unidades se restituyen una sola vez, incluso si repito la solicitud."
+    ]
+  },
+  {
+    "id": "HU-13",
+    "title": "Consulta de la cola de cocina",
+    "role": "Cocinero",
+    "priority": "Alta",
+    "status": "Base en código",
+    "depends": "HU-09; HU-25",
+    "story": "Como cocinero, quiero consultar y filtrar las comandas para organizar la preparación de los desayunos recibidos.",
+    "criteria": [
+      "Dada una cuenta COOK o ADMIN, cuando abro Pedidos, veo por defecto los pedidos activos, con los más antiguos primero.",
+      "Dados pedidos de distintos estados, cuando filtro por estado, Por cobrar, Completados o Todos, o busco número, cliente o teléfono, la lista corresponde al criterio.",
+      "Dado un nuevo pedido en otro dispositivo, cuando se sincroniza el panel en primer plano, aparece la comanda; los completados dejan la cola activa."
+    ]
+  },
+  {
+    "id": "HU-14",
+    "title": "Inicio de preparación",
+    "role": "Cocinero",
+    "priority": "Alta",
+    "status": "Base en código",
+    "depends": "HU-13",
+    "story": "Como cocinero, quiero marcar una comanda como en preparación para informar al cliente y coordinar el trabajo del equipo.",
+    "criteria": [
+      "Dado un pedido PENDING, cuando selecciono Iniciar preparación, el servidor lo cambia a PREPARING y registra al responsable.",
+      "Dado un pedido cancelado o entregado, cuando se solicita iniciar su preparación, el servidor rechaza la transición.",
+      "Dado un cambio confirmado, cuando otro dispositivo actualiza sus datos, visualiza el nuevo estado y el historial conserva la transición."
+    ]
+  },
+  {
+    "id": "HU-15",
+    "title": "Pedido listo para recoger",
+    "role": "Cocinero",
+    "priority": "Alta",
+    "status": "Base en código",
+    "depends": "HU-14",
+    "story": "Como cocinero, quiero marcar un pedido como listo para que el cliente sepa que puede recogerlo.",
+    "criteria": [
+      "Dado un pedido PREPARING, cuando selecciono Marcar listo, el servidor registra READY y el actor; no permite saltar directamente desde PENDING.",
+      "Dado un cliente que sigue su pedido, cuando la sincronización en primer plano recibe READY, la pantalla indica Listo para recoger y orienta el retiro en local.",
+      "Dado un pedido que cambia a READY durante el seguimiento, cuando el cliente concedió permiso de notificaciones, se emite un aviso local para recogerlo."
+    ]
+  },
+  {
+    "id": "HU-16",
+    "title": "Entrega y finalización sin duplicados",
+    "role": "Cocinero",
+    "priority": "Alta",
+    "status": "Base en código",
+    "depends": "HU-15; HU-26; migración 004 aplicada",
+    "story": "Como cocinero, quiero confirmar la entrega de un pedido listo y pagado para completar su atención y retirarlo de la cola activa.",
+    "criteria": [
+      "Dado un pedido READY pagado, cuando COOK o ADMIN confirma Entregar y completar, el servidor registra DELIVERED y la interfaz muestra Completado · entregado.",
+      "Dado un pedido sin pago, cuando ingresa COOK, la entrega está deshabilitada y el servidor también la rechaza; se solicita el cobro a administración.",
+      "Dada una entrega confirmada, cuando se reintenta, no se duplica pago ni evento; el pedido queda en Historial del cliente y Completados del personal."
+    ]
+  },
+  {
+    "id": "HU-17",
+    "title": "Detalle completo de la comanda",
+    "role": "Cocinero",
+    "priority": "Alta",
+    "status": "Base en código",
+    "depends": "HU-08; HU-13",
+    "story": "Como cocinero, quiero ver productos, cantidades e indicaciones de cada comanda para preparar el pedido solicitado sin omisiones.",
+    "criteria": [
+      "Dada una comanda, cuando la consulto, veo número, cliente, teléfono, productos, cantidades, subtotales, total y estado de pago en bloques legibles.",
+      "Dadas indicaciones del cliente y nombres largos, cuando reviso la comanda en una pantalla pequeña, el contenido usa varias líneas y permite desplazamiento.",
+      "Dado un cambio posterior en nombre o precio del producto, cuando consulto la comanda histórica, se conservan los datos originales de la compra."
+    ]
+  },
+  {
+    "id": "HU-18",
+    "title": "Consulta operativa de disponibilidad",
+    "role": "Cocinero",
+    "priority": "Media",
+    "status": "Base en código",
+    "depends": "HU-20; HU-22; HU-25",
+    "story": "Como cocinero, quiero consultar la disponibilidad de los productos para organizar la preparación según las unidades disponibles.",
+    "criteria": [
+      "Dada una cuenta COOK, cuando abro la carta del panel de cocina, puedo consultar el stock de los productos.",
+      "Dado un cambio de inventario confirmado en el servidor, cuando el panel se actualiza, se muestran las nuevas cantidades.",
+      "Dado un cocinero sin rol ADMIN, cuando intenta editar la carta o ajustar stock por la API, el servidor rechaza la operación."
+    ]
+  },
+  {
+    "id": "HU-19",
+    "title": "Alta de productos del menú",
+    "role": "Administrador",
+    "priority": "Alta",
+    "status": "Base en código",
+    "depends": "HU-25",
+    "story": "Como administrador, quiero registrar productos con nombre, categoría, precio y stock para ofrecer una carta actualizada a los clientes.",
+    "criteria": [
+      "Dados datos válidos, cuando ADMIN registra un producto, selecciona categoría, precio, stock y disponibilidad; el editor se cierra después de la confirmación del servidor.",
+      "Dados nombre vacío, precio negativo o stock inválido, cuando intento guardar, se informa el error y no se crea un producto incompleto.",
+      "Dado un precio, cuando el servidor lo valida, acepta solo importes no negativos con hasta dos decimales; los campos del editor admiten desplazamiento con letra ampliada."
+    ]
+  },
+  {
+    "id": "HU-20",
+    "title": "Edición y disponibilidad de productos",
+    "role": "Administrador",
+    "priority": "Alta",
+    "status": "Base en código",
+    "depends": "HU-19",
+    "story": "Como administrador, quiero actualizar los datos de un producto y desactivarlo temporalmente para controlar lo que se ofrece en la carta.",
+    "criteria": [
+      "Dado un producto y su versión vigente, cuando guardo, se actualizan nombre, descripción, categoría elegida, precio y disponibilidad.",
+      "Dado un producto desactivado, cuando el cliente actualiza la carta, deja de poder seleccionarlo para nuevos pedidos.",
+      "Dado un cambio concurrente o un fallo del servidor, cuando intento guardar una edición, se informa el error y el editor permanece abierto para corregir o reintentar."
+    ]
+  },
+  {
+    "id": "HU-21",
+    "title": "Imágenes de productos",
+    "role": "Administrador",
+    "priority": "Media",
+    "status": "Base en código",
+    "depends": "HU-19; HU-20",
+    "story": "Como administrador, quiero agregar una fotografía a cada producto para que los clientes puedan reconocer lo que comprarán.",
+    "criteria": [
+      "Dada una imagen JPEG, PNG o WebP de hasta 5 MB, cuando la subo con rol ADMIN, se obtiene una URL de Storage para el producto.",
+      "Dado un archivo de tipo no admitido o demasiado grande, cuando intento subirlo, se muestra un error y no se anuncia éxito.",
+      "Dado un fallo en Storage o un usuario sin permisos, cuando se intenta subir una imagen, no se guarda una URI local como si fuera una imagen pública confirmada."
+    ]
+  },
+  {
+    "id": "HU-22",
+    "title": "Ajustes y movimientos de stock",
+    "role": "Administrador",
+    "priority": "Alta",
+    "status": "Base en código",
+    "depends": "HU-19; HU-20",
+    "story": "Como administrador, quiero ajustar las unidades vendibles de un producto para reflejar la disponibilidad real y conservar sus movimientos.",
+    "criteria": [
+      "Dado un producto y su versión vigente, cuando cambio su stock, el servidor guarda el nuevo saldo no negativo y registra la variación.",
+      "Dado un pedido confirmado, cuando se descuentan sus unidades, se registra un movimiento vinculado al pedido y al usuario responsable.",
+      "Dado un ajuste abierto antes de una venta reciente, cuando intento guardarlo sin refrescar, se rechaza la versión antigua para evitar sobrescribir el stock actualizado."
+    ]
+  },
+  {
+    "id": "HU-23",
+    "title": "Alertas de stock mínimo",
+    "role": "Administrador",
+    "priority": "Media",
+    "status": "Propuesta",
+    "depends": "HU-22",
+    "story": "Como administrador, quiero definir un stock mínimo por producto y ver alertas para reponerlo antes de que se agote.",
+    "criteria": [
+      "Dado un producto, cuando configuro un mínimo no negativo, el sistema guarda ese umbral para su seguimiento.",
+      "Dado un saldo menor o igual al mínimo, cuando consulto inventario, el producto aparece identificado como stock bajo.",
+      "Dada una reposición que supera el mínimo, cuando se actualiza el saldo, la alerta deja de mostrarse sin cambiar el historial de movimientos."
+    ]
+  },
+  {
+    "id": "HU-24",
+    "title": "Avisos y apertura de recepción",
+    "role": "Administrador",
+    "priority": "Alta",
+    "status": "Base en código",
+    "depends": "HU-25; HU-09",
+    "story": "Como administrador, quiero publicar avisos y abrir o cerrar la recepción de pedidos para comunicar la operación del negocio.",
+    "criteria": [
+      "Dados título y mensaje válidos, cuando publico un aviso, se persiste con su autor y los clientes lo reciben al actualizar.",
+      "Dada la recepción cerrada, cuando un cliente intenta crear un pedido nuevo, el servidor lo rechaza y conserva la integridad del inventario.",
+      "Dado un pedido ya confirmado antes del cierre, cuando se reintenta la misma solicitud, se devuelve el pedido existente sin duplicarlo ni bloquear su consulta."
+    ]
+  },
+  {
+    "id": "HU-25",
+    "title": "Gestión de personal y roles",
+    "role": "Administrador",
+    "priority": "Alta",
+    "status": "Parcial",
+    "depends": "HU-02; cuenta ADMIN inicial configurada por un operador confiable",
+    "story": "Como administrador, quiero gestionar desde una interfaz las cuentas y roles del personal para asignar únicamente los permisos necesarios.",
+    "criteria": [
+      "Dado un administrador autorizado, cuando asigna un rol a una cuenta verificada, solo puede elegir CLIENT, COOK o ADMIN.",
+      "Dado un cliente o cocinero, cuando intenta asignarse permisos superiores, el servidor rechaza la operación.",
+      "Dado un cambio de rol, cuando se confirma, se registra quién lo hizo y el acceso posterior respeta el rol vigente del servidor."
+    ]
+  },
+  {
+    "id": "HU-26",
+    "title": "Cobro verificado y entrega atómica",
+    "role": "Administrador",
+    "priority": "Alta",
+    "status": "Base en código",
+    "depends": "HU-09; permisos ADMIN; migración 004 aplicada",
+    "story": "Como administrador, quiero registrar el pago verificado en efectivo, Yape o Plin y completar la entrega cuando el pedido esté listo para evitar cobros o entregas incompletas.",
+    "criteria": [
+      "Dado un pedido cobrable, cuando confirmo el dinero recibido, el servidor registra importe real, método, actor y fecha; Yape y Plin exigen referencia verificada.",
+      "Dado un pedido READY sin pagar, cuando uso Cobrar y completar y confirmo Cobrar y entregar, cobro y entrega se guardan en una transacción; si falla la entrega, se revierte también el pago.",
+      "Dado un cobro confirmado, cuando reintento la misma solicitud, no se duplica; si registro datos distintos para un pago existente, el servidor informa el conflicto."
+    ]
+  },
+  {
+    "id": "HU-27",
+    "title": "Cierre de caja por jornada",
+    "role": "Administrador",
+    "priority": "Alta",
+    "status": "Base en código",
+    "depends": "HU-26; HU-28",
+    "story": "Como administrador, quiero cerrar la caja de una jornada conciliada para conservar un resumen estable de los cobros recibidos.",
+    "criteria": [
+      "Dada una fecha no futura y el total conciliado, cuando ADMIN confirma el cierre, se guarda fecha de negocio, total, cantidad de pagos y responsable.",
+      "Dado un importe cambiado por otro cobro, cuando intento cerrar con un total anterior, el servidor rechaza el cierre y pide actualizar; COOK no puede cerrar caja.",
+      "Dada una jornada cerrada, cuando la consulto, veo importe y cantidad conciliados, sin botón habilitado para otro cierre; el servidor impide nuevos cobros de esa jornada."
+    ]
+  },
+  {
+    "id": "HU-28",
+    "title": "Reportes diarios y exportación CSV",
+    "role": "Administrador",
+    "priority": "Alta",
+    "status": "Base en código",
+    "depends": "HU-26",
+    "story": "Como administrador, quiero consultar y exportar los cobros y resultados de una fecha para evaluar los ingresos y la operación del negocio.",
+    "criteria": [
+      "Dada una fecha, cuando consulto el reporte, se suman pagos confirmados según su fecha de cobro en America/Lima y se muestran pedidos cobrados, unidades y desglose por efectivo, Yape y Plin.",
+      "Dados pedidos de la jornada, cuando reviso el reporte, veo completados, cancelados, productos y detalle de cobros; los pendientes se muestran aparte y no aumentan los ingresos.",
+      "Dado el reporte, cuando elijo Guardar reporte CSV y un destino Android, se exportan resumen, cobros y productos; si no hay pagos, los ingresos y unidades son cero."
+    ]
+  },
+  {
+    "id": "HU-29",
+    "title": "Recetas, porciones e insumos",
+    "role": "Administrador",
+    "priority": "Media",
+    "status": "Propuesta",
+    "depends": "HU-19; HU-22",
+    "story": "Como administrador, quiero definir insumos y recetas por producto para calcular el consumo real de bebidas, panes y combos.",
+    "criteria": [
+      "Dado un insumo, cuando lo registro, se define una unidad base como mililitro, gramo o unidad y un saldo válido.",
+      "Dado un producto o combo, cuando configuro su receta, se establecen cantidades por porción y se impiden componentes cíclicos.",
+      "Dado un pedido, cuando se reserva stock mediante recetas, se valida y descuenta cada insumo una sola vez en una transacción, sin duplicar el consumo por otro contador."
+    ]
+  },
+  {
+    "id": "HU-30",
+    "title": "Consulta de trazabilidad operativa",
+    "role": "Administrador",
+    "priority": "Media",
+    "status": "Parcial",
+    "depends": "HU-14; HU-15; HU-16; HU-22",
+    "story": "Como administrador, quiero consultar el historial de estados y movimientos de stock para explicar cambios e investigar diferencias operativas.",
+    "criteria": [
+      "Dado un pedido, cuando abro su historial, veo sus transiciones con estado anterior, nuevo estado, fecha, actor y motivo cuando corresponde.",
+      "Dado un producto, cuando reviso sus movimientos, puedo distinguir altas, ajustes, reservas de pedidos y devoluciones por cancelación.",
+      "Dado un usuario sin permisos, cuando intenta alterar eventos históricos o consultar datos fuera de su alcance, el servidor rechaza la operación."
+    ]
+  }
+]
