@@ -220,6 +220,20 @@ func (s *Store) createUser(name, phone, email, password, role string) (User, err
 	}
 	return u, nil
 }
+func isAllowedOrigin(origin, cfgOrigin string) bool {
+	if origin == cfgOrigin {
+		return true
+	}
+	if origin == "" {
+		return false
+	}
+	if strings.Replace(origin, "://localhost:", "://127.0.0.1:", 1) == cfgOrigin ||
+		strings.Replace(origin, "://127.0.0.1:", "://localhost:", 1) == cfgOrigin {
+		return true
+	}
+	return false
+}
+
 func (s *Server) routes() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/v1/health", func(w http.ResponseWriter, r *http.Request) {
@@ -235,7 +249,7 @@ func (s *Server) routes() http.Handler {
 		w.Header().Set("Cache-Control", "no-store")
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		if r.Method != "GET" && r.Method != "HEAD" {
-			if r.Header.Get("Origin") != s.cfg.Origin || r.Header.Get("Sec-Fetch-Site") == "cross-site" {
+			if !isAllowedOrigin(r.Header.Get("Origin"), s.cfg.Origin) || r.Header.Get("Sec-Fetch-Site") == "cross-site" {
 				writeError(w, denied())
 				return
 			}

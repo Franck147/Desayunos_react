@@ -2,9 +2,15 @@ frontend/node_modules/
 frontend/.next/
 frontend/*.tsbuildinfo
 frontend/next-env.d.ts
+frontend/AGENTS.md
+node_modules/
 .tools/
 .data/
 backend/.data/
 backend/*.exe
+backend/*.exe~
 .env
 *.log
+*.pptx
+docs/capturas_ppt/
+scripts/
